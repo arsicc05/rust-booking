@@ -10,7 +10,9 @@ pub async fn get_notifications(
     db: &Database,
     query: NotificationsQuery,
 ) -> Result<Vec<NotificationResponse>, AppError> {
-    let notifications = repository::find_by_user_id(db, query.user_id).await?;
+    let user_id = query.user_id
+        .ok_or_else(|| shared::errors::AppError::BadRequest("Missing user_id".into()))?;
+    let notifications = repository::find_by_user_id(db, user_id).await?;
     Ok(notifications.into_iter().map(NotificationResponse::from).collect())
 }
 
@@ -39,8 +41,8 @@ pub async fn handle_appointment_created(
 
     let notification = Notification {
         id: None,
-        user_id: event.customer_id,
-        appointment_id: event.appointment_id,
+        user_id: event.customer_id.to_string(),
+        appointment_id: event.appointment_id.to_string(),
         notification_type: "booking_confirmed".to_string(),
         message: format!(
             "Your appointment has been confirmed for {} to {}",
@@ -61,8 +63,8 @@ pub async fn handle_appointment_cancelled(
 ) -> Result<(), AppError> {
     let notification = Notification {
         id: None,
-        user_id: event.customer_id,
-        appointment_id: event.appointment_id,
+        user_id: event.customer_id.to_string(),
+        appointment_id: event.appointment_id.to_string(),
         notification_type: "booking_cancelled".to_string(),
         message: format!(
             "Your appointment for {} to {} has been cancelled",

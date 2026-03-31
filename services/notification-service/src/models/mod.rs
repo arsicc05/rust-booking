@@ -6,8 +6,8 @@ use uuid::Uuid;
 pub struct Notification {
     #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
     pub id: Option<mongodb::bson::oid::ObjectId>,
-    pub user_id: Uuid,
-    pub appointment_id: Uuid,
+    pub user_id: String,
+    pub appointment_id: String,
     pub notification_type: String,
     pub message: String,
     pub qr_code: Option<String>,

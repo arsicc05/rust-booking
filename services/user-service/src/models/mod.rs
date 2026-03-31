@@ -15,6 +15,7 @@ pub struct Profile {
     pub location_lng: Option<f64>,
     pub address: Option<String>,
     pub service_type: Option<String>,
+    pub role: String,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }

@@ -29,7 +29,11 @@ pub async fn get_available_slots(
     pool: &PgPool,
     query: SlotsQuery,
 ) -> Result<Vec<TimeSlot>, AppError> {
-    repository::find_available_slots(pool, query.provider_id, query.date.as_deref()).await
+    if query.all.unwrap_or(false) {
+        repository::find_all_provider_slots(pool, query.provider_id).await
+    } else {
+        repository::find_available_slots(pool, query.provider_id, query.date.as_deref()).await
+    }
 }
 
 pub async fn book_appointment(
@@ -126,9 +130,11 @@ pub async fn my_appointments(
     pool: &PgPool,
     query: MyAppointmentsQuery,
 ) -> Result<Vec<Appointment>, AppError> {
+    let user_id = query.user_id
+        .ok_or_else(|| AppError::BadRequest("Missing user_id".into()))?;
     match query.role.as_deref() {
-        Some("provider") => repository::find_appointments_by_provider(pool, query.user_id).await,
-        _ => repository::find_appointments_by_customer(pool, query.user_id).await,
+        Some("provider") => repository::find_appointments_by_provider(pool, user_id).await,
+        _ => repository::find_appointments_by_customer(pool, user_id).await,
     }
 }
 

@@ -9,6 +9,7 @@ pub struct CreateProfileRequest {
     pub phone: Option<String>,
     pub bio: Option<String>,
     pub service_type: Option<String>,
+    pub role: Option<String>,
     pub location_lat: Option<f64>,
     pub location_lng: Option<f64>,
     pub address: Option<String>,

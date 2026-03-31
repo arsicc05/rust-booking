@@ -51,7 +51,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/notifications/my", get(handlers::get_notifications))
-        .route("/notifications/:id/qr", get(handlers::get_qr_code))
+        .route("/notifications/{id}/qr", get(handlers::get_qr_code))
         .route("/health", get(health))
         .layer(cors)
         .with_state(state);

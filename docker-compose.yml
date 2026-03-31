@@ -126,7 +126,7 @@ services:
       args:
         SERVICE_NAME: api-gateway
     ports:
-      - "3000:3000"
+      - "4000:4000"
     environment:
       JWT_SECRET: ${JWT_SECRET:-super-secret-jwt-key-change-in-production}
       AUTH_SERVICE_URL: http://auth-service:3001

@@ -3,14 +3,14 @@ use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 pub struct NotificationsQuery {
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
 }
 
 #[derive(Debug, Serialize)]
 pub struct NotificationResponse {
     pub id: String,
-    pub user_id: Uuid,
-    pub appointment_id: Uuid,
+    pub user_id: String,
+    pub appointment_id: String,
     pub notification_type: String,
     pub message: String,
     pub has_qr_code: bool,

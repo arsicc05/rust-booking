@@ -24,11 +24,12 @@ pub struct BookRequest {
 pub struct SlotsQuery {
     pub provider_id: Uuid,
     pub date: Option<String>,
+    pub all: Option<bool>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct MyAppointmentsQuery {
-    pub user_id: Uuid,
+    pub user_id: Option<Uuid>,
     pub role: Option<String>,
 }
 

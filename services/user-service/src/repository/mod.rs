@@ -14,9 +14,10 @@ pub async fn find_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Option<Prof
 }
 
 pub async fn create(pool: &PgPool, req: &CreateProfileRequest) -> Result<Profile, AppError> {
+    let role = req.role.as_deref().unwrap_or("user");
     sqlx::query_as::<_, Profile>(
-        r#"INSERT INTO profiles (user_id, first_name, last_name, phone, bio, service_type, location_lat, location_lng, address)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *"#,
+        r#"INSERT INTO profiles (user_id, first_name, last_name, phone, bio, service_type, role, location_lat, location_lng, address)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *"#,
     )
     .bind(req.user_id)
     .bind(&req.first_name)
@@ -24,6 +25,7 @@ pub async fn create(pool: &PgPool, req: &CreateProfileRequest) -> Result<Profile
     .bind(&req.phone)
     .bind(&req.bio)
     .bind(&req.service_type)
+    .bind(role)
     .bind(req.location_lat)
     .bind(req.location_lng)
     .bind(&req.address)
@@ -71,7 +73,7 @@ pub async fn find_providers(
 ) -> Result<Vec<Profile>, AppError> {
     if let Some(st) = service_type {
         sqlx::query_as::<_, Profile>(
-            "SELECT * FROM profiles WHERE service_type = $1 ORDER BY created_at DESC",
+            "SELECT * FROM profiles WHERE role = 'provider' AND service_type = $1 ORDER BY created_at DESC",
         )
         .bind(st)
         .fetch_all(pool)
@@ -79,8 +81,8 @@ pub async fn find_providers(
     } else if let Some(s) = search {
         let pattern = format!("%{}%", s);
         sqlx::query_as::<_, Profile>(
-            r#"SELECT * FROM profiles WHERE
-               first_name ILIKE $1 OR last_name ILIKE $1 OR service_type ILIKE $1
+            r#"SELECT * FROM profiles WHERE role = 'provider' AND
+               (first_name ILIKE $1 OR last_name ILIKE $1 OR service_type ILIKE $1)
                ORDER BY created_at DESC"#,
         )
         .bind(&pattern)
@@ -88,7 +90,7 @@ pub async fn find_providers(
         .await
     } else {
         sqlx::query_as::<_, Profile>(
-            "SELECT * FROM profiles WHERE service_type IS NOT NULL ORDER BY created_at DESC",
+            "SELECT * FROM profiles WHERE role = 'provider' ORDER BY created_at DESC",
         )
         .fetch_all(pool)
         .await
@@ -98,7 +100,7 @@ pub async fn find_providers(
 
 pub async fn find_provider(pool: &PgPool, user_id: Uuid) -> Result<Option<Profile>, AppError> {
     sqlx::query_as::<_, Profile>(
-        "SELECT * FROM profiles WHERE user_id = $1 AND service_type IS NOT NULL",
+        "SELECT * FROM profiles WHERE user_id = $1 AND role = 'provider'",
     )
     .bind(user_id)
     .fetch_optional(pool)

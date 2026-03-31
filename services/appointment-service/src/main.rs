@@ -62,7 +62,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/appointments/slots", get(handlers::get_available_slots))
         .route("/appointments/book", post(handlers::book_appointment))
         .route(
-            "/appointments/:id/cancel",
+            "/appointments/{id}/cancel",
             post(handlers::cancel_appointment),
         )
         .route("/appointments/my", get(handlers::my_appointments))

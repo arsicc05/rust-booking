@@ -43,12 +43,12 @@ async fn main() -> anyhow::Result<()> {
         .allow_headers(Any);
 
     let app = Router::new()
-        .route("/users/:user_id", get(handlers::get_profile))
+        .route("/users/{user_id}", get(handlers::get_profile))
         .route("/users", post(handlers::create_profile))
-        .route("/users/:user_id", put(handlers::update_profile))
+        .route("/users/{user_id}", put(handlers::update_profile))
         .route("/users/providers", get(handlers::list_providers))
-        .route("/users/providers/:user_id", get(handlers::get_provider))
-        .route("/users/:user_id/avatar", post(handlers::upload_avatar))
+        .route("/users/providers/{user_id}", get(handlers::get_provider))
+        .route("/users/{user_id}/avatar", post(handlers::upload_avatar))
         .route("/health", get(health))
         .layer(cors)
         .with_state(state);

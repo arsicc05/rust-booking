@@ -5,10 +5,7 @@ use uuid::Uuid;
 
 use crate::models::Notification;
 
-pub async fn find_by_user_id(
-    db: &Database,
-    user_id: Uuid,
-) -> Result<Vec<Notification>, AppError> {
+pub async fn find_by_user_id(db: &Database, user_id: Uuid) -> Result<Vec<Notification>, AppError> {
     use futures_util::StreamExt;
 
     let collection = db.collection::<Notification>("notifications");
@@ -27,10 +24,7 @@ pub async fn find_by_user_id(
     Ok(notifications)
 }
 
-pub async fn find_by_id(
-    db: &Database,
-    id: &str,
-) -> Result<Option<Notification>, AppError> {
+pub async fn find_by_id(db: &Database, id: &str) -> Result<Option<Notification>, AppError> {
     let oid = ObjectId::parse_str(id)
         .map_err(|_| AppError::BadRequest("Invalid notification ID".into()))?;
 
