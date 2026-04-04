@@ -60,6 +60,7 @@ async fn main() -> anyhow::Result<()> {
             "/api/notifications/{*path}",
             any(handlers::proxy_notification),
         )
+        .route("/uploads/{*path}", any(handlers::proxy_uploads))
         .route("/health", get(health))
         .layer(axum_middleware::from_fn_with_state(
             state.clone(),

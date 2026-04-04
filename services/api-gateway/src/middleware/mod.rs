@@ -15,7 +15,11 @@ pub async fn auth_middleware(
 ) -> Result<Response, AppError> {
     let path = req.uri().path().to_string();
 
-    if path.contains("/auth/login") || path.contains("/auth/register") || path == "/health" {
+    if path.contains("/auth/login")
+        || path.contains("/auth/register")
+        || path.starts_with("/uploads/")
+        || path == "/health"
+    {
         return Ok(next.run(req).await);
     }
 
@@ -32,10 +36,8 @@ pub async fn auth_middleware(
         .map_err(|_| AppError::Unauthorized("Invalid or expired token".into()))?;
 
     let mut req = req;
-    req.headers_mut().insert(
-        "X-User-Id",
-        claims.sub.to_string().parse().unwrap(),
-    );
+    req.headers_mut()
+        .insert("X-User-Id", claims.sub.to_string().parse().unwrap());
     req.headers_mut().insert(
         "X-User-Role",
         format!("{:?}", claims.role).to_lowercase().parse().unwrap(),

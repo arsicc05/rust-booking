@@ -148,6 +148,23 @@ pub async fn proxy_notification(
     .await
 }
 
+pub async fn proxy_uploads(
+    State(state): State<AppState>,
+    Path(path): Path<String>,
+    req: Request<Body>,
+) -> Result<Response, AppError> {
+    let base = format!("{}/uploads/{}", state.services.user, path);
+    let url = append_query_string(&base, req.uri());
+    proxy_request(
+        &state.http_client,
+        req.method().clone(),
+        &url,
+        req.headers().clone(),
+        req,
+    )
+    .await
+}
+
 pub async fn composed_my_appointments(
     State(state): State<AppState>,
     headers: HeaderMap,

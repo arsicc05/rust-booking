@@ -14,7 +14,7 @@ resolver = "2"
 axum = { version = "0.8", features = ["multipart"] }
 axum-extra = { version = "0.10", features = ["typed-header", "cookie"] }
 tower = "0.5"
-tower-http = { version = "0.6", features = ["cors", "trace", "compression-full"] }
+tower-http = { version = "0.6", features = ["cors", "trace", "compression-full", "fs"] }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }

@@ -11,6 +11,7 @@ use axum::{
 use shared::config::DatabaseConfig;
 use sqlx::postgres::PgPoolOptions;
 use tower_http::cors::{Any, CorsLayer};
+use tower_http::services::ServeDir;
 use tracing_subscriber::EnvFilter;
 
 #[derive(Clone)]
@@ -35,6 +36,10 @@ async fn main() -> anyhow::Result<()> {
 
     sqlx::migrate!("./migrations").run(&pool).await?;
 
+    if let Err(e) = tokio::fs::create_dir_all("./uploads").await {
+        tracing::warn!("Failed to create uploads directory: {}", e);
+    }
+
     let state = AppState { db: pool };
 
     let cors = CorsLayer::new()
@@ -49,6 +54,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/users/providers", get(handlers::list_providers))
         .route("/users/providers/{user_id}", get(handlers::get_provider))
         .route("/users/{user_id}/avatar", post(handlers::upload_avatar))
+        .nest_service("/uploads", ServeDir::new("./uploads"))
         .route("/health", get(health))
         .layer(cors)
         .with_state(state);
