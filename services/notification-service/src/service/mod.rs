@@ -10,16 +10,17 @@ pub async fn get_notifications(
     db: &Database,
     query: NotificationsQuery,
 ) -> Result<Vec<NotificationResponse>, AppError> {
-    let user_id = query.user_id
+    let user_id = query
+        .user_id
         .ok_or_else(|| shared::errors::AppError::BadRequest("Missing user_id".into()))?;
     let notifications = repository::find_by_user_id(db, user_id).await?;
-    Ok(notifications.into_iter().map(NotificationResponse::from).collect())
+    Ok(notifications
+        .into_iter()
+        .map(NotificationResponse::from)
+        .collect())
 }
 
-pub async fn get_qr_code(
-    db: &Database,
-    notification_id: &str,
-) -> Result<String, AppError> {
+pub async fn get_qr_code(db: &Database, notification_id: &str) -> Result<String, AppError> {
     let notification = repository::find_by_id(db, notification_id)
         .await?
         .ok_or_else(|| AppError::NotFound("Notification not found".into()))?;
@@ -53,7 +54,10 @@ pub async fn handle_appointment_created(
     };
 
     repository::insert(db, &notification).await?;
-    tracing::info!("Created booking confirmation for appointment {}", event.appointment_id);
+    tracing::info!(
+        "Created booking confirmation for appointment {}",
+        event.appointment_id
+    );
     Ok(())
 }
 
@@ -75,8 +79,49 @@ pub async fn handle_appointment_cancelled(
     };
 
     repository::insert(db, &notification).await?;
-    tracing::info!("Created cancellation notification for appointment {}", event.appointment_id);
+    tracing::info!(
+        "Created cancellation notification for appointment {}",
+        event.appointment_id
+    );
     Ok(())
+}
+
+pub async fn validate_qr_code(
+    db: &Database,
+    qr_data: &str,
+) -> Result<crate::dto::ValidateQrResponse, AppError> {
+    let parts: Vec<&str> = qr_data.splitn(4, ':').collect();
+
+    if parts.len() < 4 || parts[0] != "BOOKING" {
+        return Ok(crate::dto::ValidateQrResponse {
+            valid: false,
+            appointment_id: None,
+            customer_id: None,
+            start_time: None,
+        });
+    }
+
+    let appointment_id = parts[1];
+    let customer_id = parts[2];
+    let start_time = parts[3];
+
+    let notification = repository::find_by_appointment_id(db, appointment_id).await?;
+
+    if notification.is_some() {
+        Ok(crate::dto::ValidateQrResponse {
+            valid: true,
+            appointment_id: Some(appointment_id.to_string()),
+            customer_id: Some(customer_id.to_string()),
+            start_time: Some(start_time.to_string()),
+        })
+    } else {
+        Ok(crate::dto::ValidateQrResponse {
+            valid: false,
+            appointment_id: None,
+            customer_id: None,
+            start_time: None,
+        })
+    }
 }
 
 fn generate_qr_code(data: &str) -> Result<String, AppError> {

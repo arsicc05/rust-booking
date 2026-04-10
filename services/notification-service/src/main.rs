@@ -5,7 +5,7 @@ mod models;
 mod repository;
 mod service;
 
-use axum::{routing::get, Router};
+use axum::{routing::{get, post}, Router};
 use futures_util::StreamExt;
 use shared::config::{MongoConfig, NatsConfig};
 use tower_http::cors::{Any, CorsLayer};
@@ -52,6 +52,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/notifications/my", get(handlers::get_notifications))
         .route("/notifications/{id}/qr", get(handlers::get_qr_code))
+        .route("/notifications/validate-qr", post(handlers::validate_qr_code))
         .route("/health", get(health))
         .layer(cors)
         .with_state(state);

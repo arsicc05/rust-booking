@@ -14,12 +14,15 @@ pub async fn get_notifications(
     headers: HeaderMap,
     Query(query): Query<NotificationsQuery>,
 ) -> Result<Json<ApiResponse<Vec<NotificationResponse>>>, AppError> {
-    let user_id = query.user_id.or_else(|| {
-        headers
-            .get("X-User-Id")
-            .and_then(|v| v.to_str().ok())
-            .and_then(|v| Uuid::parse_str(v).ok())
-    }).ok_or_else(|| AppError::BadRequest("Missing user_id".into()))?;
+    let user_id = query
+        .user_id
+        .or_else(|| {
+            headers
+                .get("X-User-Id")
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| Uuid::parse_str(v).ok())
+        })
+        .ok_or_else(|| AppError::BadRequest("Missing user_id".into()))?;
 
     let final_query = NotificationsQuery {
         user_id: Some(user_id),
@@ -34,4 +37,12 @@ pub async fn get_qr_code(
 ) -> Result<Json<ApiResponse<String>>, AppError> {
     let qr = service::get_qr_code(&state.db, &id).await?;
     Ok(Json(ApiResponse::success(qr)))
+}
+
+pub async fn validate_qr_code(
+    State(state): State<AppState>,
+    Json(req): Json<ValidateQrRequest>,
+) -> Result<Json<ApiResponse<ValidateQrResponse>>, AppError> {
+    let result = service::validate_qr_code(&state.db, &req.qr_data).await?;
+    Ok(Json(ApiResponse::success(result)))
 }

@@ -35,6 +35,14 @@ pub async fn find_by_id(db: &Database, id: &str) -> Result<Option<Notification>,
         .map_err(|e| AppError::Internal(e.to_string()))
 }
 
+pub async fn find_by_appointment_id(db: &Database, appointment_id: &str) -> Result<Option<Notification>, AppError> {
+    let collection = db.collection::<Notification>("notifications");
+    collection
+        .find_one(doc! { "appointment_id": appointment_id })
+        .await
+        .map_err(|e| AppError::Internal(e.to_string()))
+}
+
 pub async fn insert(db: &Database, notification: &Notification) -> Result<(), AppError> {
     let collection = db.collection::<Notification>("notifications");
     collection
