@@ -43,3 +43,22 @@ pub struct AppointmentEvent {
     pub end_time: DateTime<Utc>,
     pub status: String,
 }
+
+#[derive(Debug, Serialize, sqlx::FromRow)]
+pub struct AppointmentWithDetails {
+    pub id: Uuid,
+    pub slot_id: Uuid,
+    pub customer_id: Uuid,
+    pub provider_id: Uuid,
+    pub status: String,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    pub start_time: DateTime<Utc>,
+    pub end_time: DateTime<Utc>,
+    pub provider_first_name: Option<String>,
+    pub provider_last_name: Option<String>,
+    pub provider_service_type: Option<String>,
+    pub provider_address: Option<String>,
+    pub customer_first_name: Option<String>,
+    pub customer_last_name: Option<String>,
+}

@@ -148,7 +148,14 @@ pub async fn find_appointments_by_customer(
     customer_id: Uuid,
 ) -> Result<Vec<Appointment>, AppError> {
     sqlx::query_as::<_, Appointment>(
-        "SELECT id, slot_id, customer_id, provider_id, status::TEXT as status, created_at, updated_at FROM appointments WHERE customer_id = $1 ORDER BY created_at DESC",
+        "SELECT 
+            a.id, a.slot_id, a.customer_id, a.provider_id, 
+            a.status::TEXT as status, a.created_at, a.updated_at,
+            ts.start_time, ts.end_time
+         FROM appointments a
+         JOIN time_slots ts ON a.slot_id = ts.id
+         WHERE a.customer_id = $1 
+         ORDER BY ts.start_time DESC",
     )
     .bind(customer_id)
     .fetch_all(pool)
@@ -161,7 +168,14 @@ pub async fn find_appointments_by_provider(
     provider_id: Uuid,
 ) -> Result<Vec<Appointment>, AppError> {
     sqlx::query_as::<_, Appointment>(
-        "SELECT id, slot_id, customer_id, provider_id, status::TEXT as status, created_at, updated_at FROM appointments WHERE provider_id = $1 ORDER BY created_at DESC",
+        "SELECT 
+            a.id, a.slot_id, a.customer_id, a.provider_id, 
+            a.status::TEXT as status, a.created_at, a.updated_at,
+            ts.start_time, ts.end_time
+         FROM appointments a
+         JOIN time_slots ts ON a.slot_id = ts.id
+         WHERE a.provider_id = $1 
+         ORDER BY ts.start_time DESC",
     )
     .bind(provider_id)
     .fetch_all(pool)
